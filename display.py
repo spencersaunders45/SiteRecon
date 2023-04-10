@@ -21,3 +21,7 @@ class IO:
 
     def display_title(self):
         console.print(self.title, style="bold red")
+
+    def get_url(self):
+        url = input("Enter a URL: ")
+        return url
