@@ -27,7 +27,6 @@ class SiteRecon():
     url = None
     soup = None
     root = None
-    current_node = None
     all_links = set()
     all_emails = set()
     crawl_count = 0
@@ -41,8 +40,8 @@ class SiteRecon():
     def title(self):
         IO.display_title()
 
-    def get_http_response(self):
-        r = requests.get("https://" + self.url, headers=self.headers)
+    def get_http_response(self, url):
+        r = requests.get(url, headers=self.headers)
         return r
     
     def find_links(self, parent):
@@ -52,12 +51,20 @@ class SiteRecon():
             if link not in self.all_links:
                 child_node = Tree(parent, link)
 
+    def scan_page(self, url):
+        r = self.get_http_response(url)
+        # check status code
+        # get page links & separate from external links
+        # check for forms
+        # 
+
     """
     1. get links of root and add to children
     2. start looping through children and add their child links
     3. once looped through all them 
     """
     def crawl_site(self, parent):
+        self.crawl_count += 1
         children = parent.get_children()
         # exit case
         if self.crawl_count > self.crawl_max or len(children) == 0:
@@ -72,11 +79,11 @@ class SiteRecon():
 
     def target_url(self):
         self.url = IO.get_url()
-        r = self.get_http_response()
+        r = self.get_http_response("https://" + self.url)
         if r.status_code == 200:
-            self.root = Tree(None, "https://" + self.url)
-            self.current_node = self.root
-            self.crawl_site()
+            self.root = Tree("https://" + self.url)
+            # call function to get and add root children
+            self.crawl_site(self.root)
         else:
             print("add to else statement [target_url]")
 
