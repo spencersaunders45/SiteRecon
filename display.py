@@ -25,3 +25,12 @@ class IO:
     def get_url(self):
         url = input("Enter a URL: ")
         return url
+
+    def status_report_bad(self, status_code, url):
+        console.log(f"[[bold red]{status_code}[/bold red]]: [blue underline]{url}[/blue underline]")
+
+    def status_report_good(self, status_code, url):
+        console.log(f"[[bold green]{status_code}[/bold green]]: [blue underline]{url}[/blue underline]")
+
+    def input_field_found(self, url):
+        console.log(f"[[bold green]input found[/bold green]]: [blue underline]{url}[/blue underline]")

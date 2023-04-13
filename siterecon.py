@@ -25,9 +25,9 @@ todo: separate results by status, http protocol, forms on pages
 
 class SiteRecon():
     url = None
-    soup = None
     root = None
     all_links = set()
+    external_links = []
     all_emails = set()
     crawl_count = 0
     crawl_max = 100
@@ -43,26 +43,62 @@ class SiteRecon():
     def get_http_response(self, url):
         r = requests.get(url, headers=self.headers)
         return r
-    
-    def find_links(self, parent):
+
+    def is_external_link(self, link):
+        return not self.url in link
+
+    #  Checks if a link is internal or external and adds them to the appropriate list
+    def find_page_links(self, soup):
         links = []
-        for href in self.soup:
-            link = href.get('href')
-            if link not in self.all_links:
-                child_node = Tree(parent, link)
+        for a_tag in soup.find_all('a'):
+            link = a_tag.get('href')
+            if self.is_external_link(link):
+                self.external_links.append(link)
+            else:
+                links.append(link)
+        return links
 
-    def scan_page(self, url):
+    # Adds children nodes to the parent node
+    def add_children(self, html, parent):
+        soup = BeautifulSoup(html, 'html_parser')
+        links = self.find_page_links(soup)
+        for link in links:
+            child = Tree(link)
+            parent.add_child(child)
+
+    def check_for_input(self, html, url):
+        soup = BeautifulSoup(html, 'html_parser')
+        input_tags = soup.find_all('input')
+        if len(input_tags) > 0:
+            IO().input_field_found()
+
+    #? Do I need this?
+    def check_status_code(self, status):
+        first_digit = int(status[0])
+        match first_digit:
+            case 1:
+                return [False]
+            case 2:
+                return [True]
+            case 3:
+                return [False]
+            case 4:
+                return [False]
+            case 5:
+                return [False]
+
+    # Calls the functions that will scan the page for various items
+    def scan_page(self, url, node):
         r = self.get_http_response(url)
-        # check status code
-        # get page links & separate from external links
-        # check for forms
-        # 
+        response = self.check_status_code(str(r.status_code))
+        if response[0]:
+            IO.status_report_good(r.status_code, url)
+            self.add_children(r.text, node)
+            self.check_for_input(r.text, url)
+        else:
+            IO.status_report_bad(r.status_code, url)
 
-    """
-    1. get links of root and add to children
-    2. start looping through children and add their child links
-    3. once looped through all them 
-    """
+    # Goes through the tree in a breadth first search
     def crawl_site(self, parent):
         self.crawl_count += 1
         children = parent.get_children()
@@ -71,8 +107,7 @@ class SiteRecon():
             return
         # Scan each child url
         for child in children:
-            # call function to scan url page
-            pass
+            self.scan_page(child.url, child)
         # recursively call children nodes
         for child in children:
             self.crawl_site(child)
