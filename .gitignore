@@ -5,6 +5,7 @@
 
 # Project Files
 testing.py
+*.txt
 
 # Project Folders
 
