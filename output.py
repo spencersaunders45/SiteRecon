@@ -6,7 +6,7 @@ todo: add ability to customize output file name
 """
 
 class Writer:
-    def __init__(self, file_name="siterecon_output.txt"):
+    def __init__(self, file_name):
         self.file_name = file_name
 
     def write_header(self, url):

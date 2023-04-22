@@ -18,18 +18,21 @@ class Validation:
             IO().status_report_bad(r.status_code, site)
             exit()
 
+    def check_c_flag(self, max, min):
+        try:
+            int(max)
+            int(min)
+        except:
+            IO().invalid_flag()
+            exit()
+
     def user_command(self, command):
         command_list = command.split(" ")
         self.check_site(command_list[0])
-        for i in command_list:
-            if '-' in i:
-                match i:
-                    case '-A':
-                        pass
-                    case '-M':
-                        pass
-                    case '-P':
-                        pass
+        for i in range(1,len(command_list)):
+            flag = command_list[i]
+            if '-' in flag:
+                match flag:
                     case '-C':
                         pass
                     case '-fn':

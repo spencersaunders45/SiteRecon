@@ -8,7 +8,7 @@ from display import IO
 from tree import Tree
 
 """
-todo: make a tree for link structure
+//todo: make a tree for link structure
 todo: make different modes (aggressive, passive, etc)
     todo: passive mode - randomizes wait time between requests
 todo: option to save logs
@@ -30,8 +30,10 @@ class SiteRecon():
     external_links = []
     all_emails = set()
     crawl_count = 0
-    crawl_max = 100
+    crawl_max = None
     pause = 0
+    aggression = None
+    file_name = None
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
 
     def __inti__(self):
@@ -66,7 +68,7 @@ class SiteRecon():
             child = Tree(link)
             parent.add_child(child)
 
-    def check_for_input(self, html, url):
+    def check_for_input_fields(self, html, url):
         soup = BeautifulSoup(html, 'html_parser')
         input_tags = soup.find_all('input')
         if len(input_tags) > 0:
@@ -94,7 +96,7 @@ class SiteRecon():
         if response[0]:
             IO.status_report_good(r.status_code, url)
             self.add_children(r.text, node)
-            self.check_for_input(r.text, url)
+            self.check_for_input_fields(r.text, url)
         else:
             IO.status_report_bad(r.status_code, url)
 

@@ -1,5 +1,8 @@
 {
-    "outputPath": null,
-    "defaultDepth": 100,
-    "defaultAggression": "A"
+    "resultsOutputPath": null,
+    "outputFileName": "results.txt",
+    "maxSitesSearch": 20,
+    "defaultAggression": "M",
+    "maxWaitTime": null,
+    "minWaitTime": null,
 }
