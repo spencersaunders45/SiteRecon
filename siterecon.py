@@ -112,8 +112,12 @@ class SiteRecon():
         for child in children:
             self.crawl_site(child)
 
+    def validate_command(self, command):
+        pass
+
     def target_url(self):
-        self.url = IO.get_url()
+        command = IO.get_command()
+        self.validate_command(command)
         r = self.get_http_response("https://" + self.url)
         if r.status_code == 200:
             self.root = Tree("https://" + self.url)

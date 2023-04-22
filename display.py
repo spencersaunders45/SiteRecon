@@ -22,9 +22,9 @@ class IO:
     def display_title(self):
         console.print(self.title, style="bold red")
 
-    def get_url(self):
-        url = input("Enter a URL: ")
-        return url
+    def get_command(self):
+        command = input("> ")
+        return command
 
     def status_report_bad(self, status_code, url):
         console.log(f"[[bold red]{status_code}[/bold red]]: [blue underline]{url}[/blue underline]")
@@ -34,3 +34,22 @@ class IO:
 
     def input_field_found(self, url):
         console.log(f"[[bold green]input found[/bold green]]: [blue underline]{url}[/blue underline]")
+
+    def display_help(self):
+        """ 
+        todo: 
+        """
+        message = """
+        Aggressiveness:
+            -A: There is no pause between requests. Requests are made as fast as possible.
+            -M: There is a 5 to 10 second pause between requests.
+            -P: There is a 15 to 30 second pause between requests.
+            -C [max wait] [min wait]: This is a custom wait time where you choose the maximum and minimum wait times.
+
+        Output Files:
+            -fn [filename]: Allows you to customize the file name.
+
+        Change defaults:
+            -Dag [A/M/P/C] [optional-max wait] [optional-min wait]: Change the default aggression type
+            -Dfn [filename]: Changes the default file name
+        """
