@@ -33,10 +33,19 @@ class IO:
         console.log(f"[[bold green]{status_code}[/bold green]]: [blue underline]{url}[/blue underline]")
 
     def input_field_found(self, url):
-        console.log(f"[[bold green]input found[/bold green]]: [blue underline]{url}[/blue underline]")
+        console.log(f"[[bold green]✓[/bold green]]: [blue underline]{url}[/blue underline]")
 
     def invalid_c_flag(self):
         console.log(f"[[bold red]x[/bold red]]: max wait or min wait is not a number.")
+
+    def invalid_filename(self, file_name):
+        console.log(f"[[bold red]x[/bold red]]: {file_name} cannot be a filename")
+
+    def invalid_symbol(self):
+        console.print('[[bold red]x[/bold red]]: the following symbols cannot be used in a filename [. \ / " * | ? : > <]')
+
+    def invalid_aggression_parameter(self, flag):
+        console.print(f'[[bold red]x[/bold red]]: {flag} is not a valid parameter for -Dag')
 
     def display_help(self):
         message = """
@@ -52,7 +61,7 @@ class IO:
                 • The given file path must be the absolute file path.
 
         Change defaults:
-            -Dag [A/M/P/C] [optional-max wait] [optional-min wait]: Change the default aggression type.
+            -Dag [A/M/P/C] ['C only' max wait] ['C only' min wait]: Change the default aggression type.
             -Dfn [filename]: Changes the default file name.
             -Dfp [output path]: Changes the default output path.
             -Ds [number]: Changes the default number of sites searched.

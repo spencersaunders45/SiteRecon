@@ -34,10 +34,32 @@ class Validation:
             if '-' in flag:
                 match flag:
                     case '-C':
-                        pass
+                        try:
+                            int(command_list[i+1])
+                            int(command_list[i+2])
+                        except:
+                            IO().invalid_c_flag()
+                            exit()
                     case '-fn':
-                        pass
+                        unacceptable_symbols = {'.', '"', '>', '<', '\\', '/', ':', '|', '?', '*'}
+                        if unacceptable_symbols in command_list[i+1]:
+                            IO().invalid_symbol()
+                            exit()
+                        unacceptable_names = {'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'}
+                        if unacceptable_names in command_list[i+1]:
+                            IO().invalid_filename(command_list[i])
+                            exit()
                     case '-Dag':
-                        pass
+                        flag_options = {'A', 'M', 'P', 'C'}
+                        if flag_options not in command_list[i+1]:
+                            IO().invalid_aggression_parameter(command_list[i+1])
+                            exit()
+                        if command_list[i+1] == 'C':
+                            try:
+                                int(command_list[i+2])
+                                int(command_list[i+3])
+                            except:
+                                IO().invalid_c_flag()
+                                exit()
                     case '-Dfn':
                         pass

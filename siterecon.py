@@ -9,9 +9,9 @@ from tree import Tree
 
 """
 //todo: make a tree for link structure
-todo: make different modes (aggressive, passive, etc)
-    todo: passive mode - randomizes wait time between requests
-todo: option to save logs
+//todo: make different modes (aggressive, passive, etc)
+    //todo: passive mode - randomizes wait time between requests
+//todo: option to save logs
 todo: save non-domain name links and group them by domain
 todo: find and save emails
 todo: reports site response status
