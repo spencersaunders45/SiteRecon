@@ -47,6 +47,12 @@ class IO:
     def invalid_aggression_parameter(self, flag):
         console.print(f'[[bold red]x[/bold red]]: {flag} is not a valid parameter for -Dag')
 
+    def invalid_path(self, path):
+        console.print(f"[[bold red]x[/bold red]]: {path} is not a valid path")
+
+    def not_a_number(self, value):
+        console.print(f'[[bold red]x[/bold red]]: {value} is not a number')
+
     def display_help(self):
         message = """
         Aggressiveness:
@@ -82,5 +88,3 @@ class IO:
             console.print(settings)
         except:
             console.print("[[red]x[/red]] No settings file found.")
-
-IO().invalid_c_flag()

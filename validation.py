@@ -1,4 +1,5 @@
 import requests
+import os
 from display import IO
 
 class Validation:
@@ -26,6 +27,16 @@ class Validation:
             IO().invalid_flag()
             exit()
 
+    def validate_filename(self, filename):
+        unacceptable_symbols = {'.', '"', '>', '<', '\\', '/', ':', '|', '?', '*'}
+        if unacceptable_symbols in filename:
+            IO().invalid_symbol()
+            exit()
+        unacceptable_names = {'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'}
+        if unacceptable_names in filename:
+            IO().invalid_filename(filename)
+            exit()
+
     def user_command(self, command):
         command_list = command.split(" ")
         self.check_site(command_list[0])
@@ -41,14 +52,7 @@ class Validation:
                             IO().invalid_c_flag()
                             exit()
                     case '-fn':
-                        unacceptable_symbols = {'.', '"', '>', '<', '\\', '/', ':', '|', '?', '*'}
-                        if unacceptable_symbols in command_list[i+1]:
-                            IO().invalid_symbol()
-                            exit()
-                        unacceptable_names = {'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'}
-                        if unacceptable_names in command_list[i+1]:
-                            IO().invalid_filename(command_list[i])
-                            exit()
+                        self.validate_filename(command_list[i+1])
                     case '-Dag':
                         flag_options = {'A', 'M', 'P', 'C'}
                         if flag_options not in command_list[i+1]:
@@ -62,4 +66,20 @@ class Validation:
                                 IO().invalid_c_flag()
                                 exit()
                     case '-Dfn':
-                        pass
+                        self.validate_filename(command_list[i+1])
+                    case '-Dfp':
+                        if os.path.isdir(command_list[i+1]):
+                            IO().invalid_path(command_list[i+1])
+                    case '-Ds':
+                        try:
+                            int(command_list[i+1])
+                        except:
+                            IO().not_a_number(command_list[i+1])
+                    case '-s':
+                        try:
+                            int(command_list[i+1])
+                        except:
+                            IO().not_a_number(command_list[i+1])
+                    case '-fp':
+                        if os.path.isdir(command_list[i+1]):
+                            IO().invalid_path(command_list[i+1])
