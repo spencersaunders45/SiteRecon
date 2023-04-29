@@ -4,7 +4,7 @@ from time import sleep
 from bs4 import BeautifulSoup
 import requests
 # project imports
-from display import IO
+from src.display import IO
 from tree import Tree
 
 """

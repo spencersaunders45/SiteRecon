@@ -1,6 +1,6 @@
 import requests
 import os
-from display import IO
+from src.display import IO
 
 class Validation:
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
@@ -70,16 +70,20 @@ class Validation:
                     case '-Dfp':
                         if os.path.isdir(command_list[i+1]):
                             IO().invalid_path(command_list[i+1])
+                            exit()
                     case '-Ds':
                         try:
                             int(command_list[i+1])
                         except:
                             IO().not_a_number(command_list[i+1])
+                            exit()
                     case '-s':
                         try:
                             int(command_list[i+1])
                         except:
                             IO().not_a_number(command_list[i+1])
+                            exit()
                     case '-fp':
                         if os.path.isdir(command_list[i+1]):
                             IO().invalid_path(command_list[i+1])
+                            exit()
