@@ -8,7 +8,7 @@ testing.py
 *.txt
 
 # Project Folders
-
+.pytest_cache
 
 # User-specific files
 *.rsuser
