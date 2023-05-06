@@ -3,15 +3,16 @@ import os
 from src.display import IO
 
 class Validation:
-    """A Class that validates
-    
-    """
+    """A Class that validates"""
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
 
     def __init__(self):
         pass
 
     def check_site(self, site):
+        """
+        
+        """
         # adds https to url if not found
         if "https://" not in site or "http://" not in site:
             site = "https://" + site
@@ -22,7 +23,18 @@ class Validation:
             IO().status_report_bad(r.status_code, site)
             exit()
 
-    def check_c_flag(self, max, min):
+    def check_c_flag(self, max: int, min: int) -> None:
+        """Validates if values are numbers
+        
+        Parameters:
+        max : int
+            The maximum time before another request is made
+        min : int
+            The minimum time before another request is made
+
+        Returns:
+            None
+        """
         try:
             int(max)
             int(min)
@@ -30,7 +42,16 @@ class Validation:
             IO().invalid_flag()
             exit()
 
-    def validate_filename(self, filename):
+    def validate_filename(self, filename: str) -> None:
+        """Checks if a file is using invalided symbols or names
+        
+        Parameters:
+        filename : str
+            The name of the file
+
+        Returns:
+            None
+        """
         unacceptable_symbols = {'.', '"', '>', '<', '\\', '/', ':', '|', '?', '*'}
         if unacceptable_symbols in filename:
             IO().invalid_symbol()
@@ -40,7 +61,16 @@ class Validation:
             IO().invalid_filename(filename)
             exit()
 
-    def user_command(self, command):
+    def user_command(self, command: str) -> None:
+        """Validates the user commands where entered correctly
+        
+        Parameters:
+        command : str
+            The commands entered by the user
+
+        Returns:
+            None
+        """
         command_list = command.split(" ")
         self.check_site(command_list[0])
         for i in range(1,len(command_list)):
