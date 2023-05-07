@@ -92,21 +92,28 @@ class SiteRecon():
         return self.root.url in link
 
     #  Checks if a link is internal or external and adds them to the appropriate list
-    def find_page_links(self, soup: BeautifulSoup):
+    def find_page_links(self, soup: BeautifulSoup, url: str) -> None:
         """Finds and sorts links found on scanned webpage
         
         Parameters:
         soup : BeautifulSoup
             The HTML of the scanned webpage
+        url : str
+            The current webpage url
 
         Returns:
             list
         """
         links = []
         for a_tag in soup.find_all('a'):
+            # Get the link from the a_tag
             link = a_tag.get('href')
-            if link == None:
+            if link == None or len(link) == 0:
                 continue
+            # Create full link if needed
+            if link[0] == "/" or link[0] == "#":
+                link = url + link
+            # Sort links
             if not self.is_external_link(link):
                 self.external_links.add(link)
             else:
@@ -126,7 +133,7 @@ class SiteRecon():
         Returns:
             None
         """
-        links = self.find_page_links(soup)
+        links = self.find_page_links(soup, parent.url)
         for link in links:
             child = Node(link)
             parent.add_child(child)
@@ -187,23 +194,6 @@ class SiteRecon():
         self.check_for_input_fields(soup, url)
         self.find_emails(soup, url)
 
-    def crawl_root_page(self):
-        """Crawls the root page and adds the children
-        
-        Parameters:
-            None
-
-        Returns:
-            None
-        """
-        self.crawl_count += 1
-        url = self.root.url
-        r = self.get_http_response(url)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        self.add_children(soup, self.root)
-        self.check_for_input_fields(soup, url)
-        self.find_emails(soup, url)
-
     # Goes through the Node in a breadth first search
     def crawl_site(self, parent: Node) -> None:
         """Crawls through all the pages of the website
@@ -221,6 +211,8 @@ class SiteRecon():
             return
         # Scan each child url
         for child in children:
+            if self.crawl_count > self.crawl_max:
+                break
             self.scan_page(child.url, child)
         # recursively call children nodes
         for child in children:
@@ -285,8 +277,8 @@ class SiteRecon():
         """
         IO().display_title()
         self.target_url()
-        self.writer.write_header()
-        self.crawl_root_page()
+        self.writer.write_header(self.root.url)
+        self.scan_page(self.root.url, self.root)
         self.crawl_site(self.root)
         self.writer.log_data(self.all_emails, self.external_links)
 

@@ -29,8 +29,8 @@ class Writer:
         time_data = datetime.datetime.now()
         date = time_data.strftime("%x")
         time = time_data.strftime("%X")
-        f = open(self.file_name, "a")
-        f.write(f"================= {url} [{time} {date}] =================")
+        f = open(self.file_name, "w")
+        f.write(f"================= {url} [{time} {date}] =================\n")
         f.close()
 
     def log_internal_urls(self, url: str, status_code: int) -> None:
@@ -46,7 +46,7 @@ class Writer:
             None
         """
         f = open(self.file_name, "a")
-        f.write("\n========== INTERNAL URL'S ==========")
+        f.write("\n========== INTERNAL URL'S ==========\n")
         for url in self.visited_sites:
             f.write(f"{status_code}: {url}\n")
         f.close()
@@ -91,7 +91,7 @@ class Writer:
             None
         """
         f = open(self.file_name, "a")
-        f.write("\n========== EMAILS ==========")
+        f.write("\n========== EMAILS ==========\n")
         for email in emails:
             f.write(email+"\n")
         f.close()
