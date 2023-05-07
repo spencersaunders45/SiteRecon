@@ -14,6 +14,7 @@ class Writer:
     """
     def __init__(self, file_name: str):
         self.file_name = file_name
+        self.visited_sites = list()
 
     def write_header(self, url: str) -> None:
         """Writes the header on the report file
@@ -32,6 +33,24 @@ class Writer:
         f.write(f"================= {url} [{time} {date}] =================\n")
         f.close()
 
+    def log_internal_urls(self, url: str, status_code: int) -> None:
+        """Logs that status codes of internal pages
+        
+        Parameters:
+        url : str
+            The webpage url
+        status_code : int
+            The returned status code
+
+        Returns:
+            None
+        """
+        f = open(self.file_name, "a")
+        f.write("========== INTERNAL URL'S ==========")
+        for url in self.visited_sites:
+            f.write(f"{status_code}: {url}")
+        f.close()
+
     def write_log(self, text: str) -> None:
         """Writes the colleted data to the output file
         
@@ -42,3 +61,7 @@ class Writer:
         f = open(self.file_name, "a")
         f.write(text + "\n")
         f.close()
+
+    def add_url(self, status_code: int, url: str) -> None:
+        site = [status_code, url]
+        self.visited_sites.append(site)

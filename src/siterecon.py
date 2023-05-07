@@ -7,6 +7,7 @@ from requests import get, Response
 # project imports
 from display import IO
 from node import Node
+from output import Writer
 
 """
 //todo: make a Node for link structure
@@ -60,6 +61,7 @@ class SiteRecon():
     all_links = set()
     external_links = []
     all_emails = set()
+    writer = Writer()
 
     def __inti__(self):
         pass
@@ -141,7 +143,6 @@ class SiteRecon():
         Returns:
             None
         """
-        # todo: write findings to report
         input_tags = soup.find_all('input')
         if len(input_tags) > 0:
             IO().input_field_found(url)
@@ -158,7 +159,6 @@ class SiteRecon():
         Returns:
             None
         """
-        # todo: write findings to report
         regex_email = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         for text in soup.stripped_strings:
             emails = re.search(regex_email, text)
@@ -286,7 +286,6 @@ class SiteRecon():
         IO().display_title()
         self.target_url()
         self.crawl_root_page()
-        print(self.root.children)
         self.crawl_site(self.root)
 
         for email in self.all_emails:
