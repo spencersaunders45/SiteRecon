@@ -12,8 +12,9 @@ class Writer:
     file_name : str
         The name of the output file
     """
-    def __init__(self, file_name: str):
+    def __init__(self, file_name="output.txt"):
         self.file_name = file_name
+        self.visited_sites = list()
 
     def write_header(self, url: str) -> None:
         """Writes the header on the report file
@@ -28,8 +29,26 @@ class Writer:
         time_data = datetime.datetime.now()
         date = time_data.strftime("%x")
         time = time_data.strftime("%X")
-        f = open(self.file_name, "a")
+        f = open(self.file_name, "w")
         f.write(f"================= {url} [{time} {date}] =================\n")
+        f.close()
+
+    def log_internal_urls(self, url: str, status_code: int) -> None:
+        """Logs that status codes of internal pages
+        
+        Parameters:
+        url : str
+            The webpage url
+        status_code : int
+            The returned status code
+
+        Returns:
+            None
+        """
+        f = open(self.file_name, "a")
+        f.write("\n========== INTERNAL URL'S ==========\n")
+        for url in self.visited_sites:
+            f.write(f"{status_code}: {url}\n")
         f.close()
 
     def write_log(self, text: str) -> None:
@@ -38,7 +57,69 @@ class Writer:
         Parameters:
         text : str
             The text to be written to the output file
+
+        Returns:
+            None
         """
         f = open(self.file_name, "a")
         f.write(text + "\n")
         f.close()
+
+    def add_url(self, status_code: int, url: str) -> None:
+        """Adds the url to the list
+        
+        Parameters:
+        status_code : int
+            The status code returned from the http request
+        url : str
+            The url link
+
+        Returns:
+            None
+        """
+        site = [status_code, url]
+        self.visited_sites.append(site)
+
+    def log_emails(self, emails: set) -> None:
+        """Logs the emails found
+        
+        Parameters:
+        emails : list
+            All the emails found while scanned
+
+        Returns:
+            None
+        """
+        f = open(self.file_name, "a")
+        f.write("\n========== EMAILS ==========\n")
+        for email in emails:
+            f.write(email+"\n")
+        f.close()
+
+    def log_external_links(self, external_links: set) -> None:
+        """Logs the external links found
+        
+        Parameters:
+        external_links : list
+            All the external links found on the website
+
+        Returns:
+            None
+        """
+        f = open(self.file_name, "a")
+        f.write("\n========== EXTERNAL LINKS ==========\n")
+        for link in external_links:
+            f.write(link+"\n")
+        f.close()
+
+    def log_data(self, emails: set, external_links: set) -> None:
+        """Logs the data found during scanning
+        
+        Parameters:
+        emails : set
+            All the emails found during scanning
+        external_links : set
+            All external links found during scanning
+        """
+        self.log_emails(emails)
+        self.log_external_links(external_links)

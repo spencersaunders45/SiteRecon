@@ -1,12 +1,14 @@
 # python libraries
 from time import sleep
 import re
+from random import randint
 # external libraries
 from bs4 import BeautifulSoup
 from requests import get, Response
 # project imports
 from display import IO
 from node import Node
+from output import Writer
 
 """
 //todo: make a Node for link structure
@@ -49,18 +51,18 @@ class SiteRecon():
     headers : str
         The headers sent in the request
     """
-    url = None
     root = None
     crawl_count = 0
-    crawl_max = 10
-    pause_min = None
-    pause_max = None
+    crawl_max = 20
+    pause_min = 4
+    pause_max = 10
     aggression = None
     file_name = None
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
     all_links = set()
-    external_links = []
+    external_links = set()
     all_emails = set()
+    writer = Writer()
 
     def __inti__(self):
         pass
@@ -75,8 +77,11 @@ class SiteRecon():
         Returns:
             Response
         """
-        r = get(url, headers=self.headers)
-        return r
+        try:
+            r = get(url, headers=self.headers)
+            return r
+        except:
+            return Exception
 
     def is_external_link(self, link: str):
         """Checks if the found url shares the base domain of the root url
@@ -88,24 +93,37 @@ class SiteRecon():
         Returns:
             bool
         """
-        return not self.url in link
+        return self.root.url in link
 
     #  Checks if a link is internal or external and adds them to the appropriate list
-    def find_page_links(self, soup: BeautifulSoup):
+    def find_page_links(self, soup: BeautifulSoup, url: str) -> None:
         """Finds and sorts links found on scanned webpage
         
         Parameters:
         soup : BeautifulSoup
             The HTML of the scanned webpage
+        url : str
+            The current webpage url
 
         Returns:
             list
         """
         links = []
         for a_tag in soup.find_all('a'):
+            # Get the link from the a_tag
             link = a_tag.get('href')
-            if self.is_external_link(link):
-                self.external_links.append(link)
+            if link == None or len(link) == 0:
+                continue
+            # Create full link if needed
+            if link[0] == "/" or link[0] == "#":
+                link = url + link
+            elif "/" not in link and "." not in link:
+                link = url + "/" + link
+            elif "/" in link and "." not in link and link[0] != "/":
+                link = url + "/" + link
+            # Sort links
+            if not self.is_external_link(link):
+                self.external_links.add(link)
             else:
                 links.append(link)
         return links
@@ -123,7 +141,7 @@ class SiteRecon():
         Returns:
             None
         """
-        links = self.find_page_links(soup)
+        links = self.find_page_links(soup, parent.url)
         for link in links:
             child = Node(link)
             parent.add_child(child)
@@ -140,16 +158,15 @@ class SiteRecon():
         Returns:
             None
         """
-        # todo: write findings to report
         input_tags = soup.find_all('input')
         if len(input_tags) > 0:
-            IO().input_field_found()
+            IO().input_field_found(url)
 
     def find_emails(self, soup: BeautifulSoup, url: str) -> None:
         """Find the emails in the HTML code
         
         Parameters:
-        soup : BeautifulSoupu
+        soup : BeautifulSoup
             The parsed html of the webpage
         url : str
             The webpage url
@@ -157,7 +174,6 @@ class SiteRecon():
         Returns:
             None
         """
-        # todo: write findings to report
         regex_email = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         for text in soup.stripped_strings:
             emails = re.search(regex_email, text)
@@ -165,6 +181,18 @@ class SiteRecon():
                 email_list = emails.group()
                 self.all_emails.add(email_list)
 
+    def request_pause(self) -> None:
+        """Pauses between requests
+        
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
+        if self.pause_max > 0:
+            wait_period = randint(self.pause_min, self.pause_max)
+            sleep(wait_period)
 
     def scan_page(self, url: str, node: Node) -> None:
         """Scans the html of the page
@@ -178,27 +206,14 @@ class SiteRecon():
         Returns:
             None
         """
+        print("SCANNING")
         self.crawl_count += 1
+        self.request_pause()
         r = self.get_http_response(url)
+        if r == Exception:
+            raise Exception
         soup = BeautifulSoup(r.text, 'html.parser')
         self.add_children(soup, node)
-        self.check_for_input_fields(soup, url)
-        self.find_emails(soup, url)
-
-    def crawl_root_page(self):
-        """Crawls the root page and adds the children
-        
-        Parameters:
-            None
-
-        Returns:
-            None
-        """
-        self.crawl_count += 1
-        url = self.root.url
-        r = self.get_http_response(url)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        self.add_children(soup, self.root)
         self.check_for_input_fields(soup, url)
         self.find_emails(soup, url)
 
@@ -219,6 +234,8 @@ class SiteRecon():
             return
         # Scan each child url
         for child in children:
+            if self.crawl_count > self.crawl_max:
+                break
             self.scan_page(child.url, child)
         # recursively call children nodes
         for child in children:
@@ -283,14 +300,13 @@ class SiteRecon():
         """
         IO().display_title()
         self.target_url()
-        self.crawl_root_page()
-        self.crawl_site(self.root)
-
-        for email in self.all_emails:
-            print(email)
-        for link in self.all_links:
-            print(link)
-        print("External URLs: ", self.external_links)
+        self.writer.write_header(self.root.url)
+        try:
+            self.scan_page(self.root.url, self.root)
+            self.crawl_site(self.root)
+        except:
+            print("A failure occurred")
+        self.writer.log_data(self.all_emails, self.external_links)
 
 
 # Run the program
