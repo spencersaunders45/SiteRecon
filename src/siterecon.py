@@ -49,7 +49,6 @@ class SiteRecon():
     headers : str
         The headers sent in the request
     """
-    url = None
     root = None
     crawl_count = 0
     crawl_max = 10
@@ -88,7 +87,7 @@ class SiteRecon():
         Returns:
             bool
         """
-        return not self.url in link
+        return self.root.url in link
 
     #  Checks if a link is internal or external and adds them to the appropriate list
     def find_page_links(self, soup: BeautifulSoup):
@@ -104,7 +103,9 @@ class SiteRecon():
         links = []
         for a_tag in soup.find_all('a'):
             link = a_tag.get('href')
-            if self.is_external_link(link):
+            if link == None:
+                continue
+            if not self.is_external_link(link):
                 self.external_links.append(link)
             else:
                 links.append(link)
@@ -143,13 +144,13 @@ class SiteRecon():
         # todo: write findings to report
         input_tags = soup.find_all('input')
         if len(input_tags) > 0:
-            IO().input_field_found()
+            IO().input_field_found(url)
 
     def find_emails(self, soup: BeautifulSoup, url: str) -> None:
         """Find the emails in the HTML code
         
         Parameters:
-        soup : BeautifulSoupu
+        soup : BeautifulSoup
             The parsed html of the webpage
         url : str
             The webpage url
@@ -178,6 +179,7 @@ class SiteRecon():
         Returns:
             None
         """
+        print("SCANNING")
         self.crawl_count += 1
         r = self.get_http_response(url)
         soup = BeautifulSoup(r.text, 'html.parser')
@@ -284,6 +286,7 @@ class SiteRecon():
         IO().display_title()
         self.target_url()
         self.crawl_root_page()
+        print(self.root.children)
         self.crawl_site(self.root)
 
         for email in self.all_emails:
