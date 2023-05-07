@@ -1,6 +1,7 @@
 # python libraries
 from time import sleep
 import re
+from random import randint
 # external libraries
 from bs4 import BeautifulSoup
 from requests import get, Response
@@ -52,9 +53,9 @@ class SiteRecon():
     """
     root = None
     crawl_count = 0
-    crawl_max = 10
-    pause_min = None
-    pause_max = None
+    crawl_max = 20
+    pause_min = 4
+    pause_max = 10
     aggression = None
     file_name = None
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
@@ -76,8 +77,11 @@ class SiteRecon():
         Returns:
             Response
         """
-        r = get(url, headers=self.headers)
-        return r
+        try:
+            r = get(url, headers=self.headers)
+            return r
+        except:
+            return Exception
 
     def is_external_link(self, link: str):
         """Checks if the found url shares the base domain of the root url
@@ -113,6 +117,10 @@ class SiteRecon():
             # Create full link if needed
             if link[0] == "/" or link[0] == "#":
                 link = url + link
+            elif "/" not in link and "." not in link:
+                link = url + "/" + link
+            elif "/" in link and "." not in link and link[0] != "/":
+                link = url + "/" + link
             # Sort links
             if not self.is_external_link(link):
                 self.external_links.add(link)
@@ -173,6 +181,18 @@ class SiteRecon():
                 email_list = emails.group()
                 self.all_emails.add(email_list)
 
+    def request_pause(self) -> None:
+        """Pauses between requests
+        
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
+        if self.pause_max > 0:
+            wait_period = randint(self.pause_min, self.pause_max)
+            sleep(wait_period)
 
     def scan_page(self, url: str, node: Node) -> None:
         """Scans the html of the page
@@ -188,7 +208,10 @@ class SiteRecon():
         """
         print("SCANNING")
         self.crawl_count += 1
+        self.request_pause()
         r = self.get_http_response(url)
+        if r == Exception:
+            raise Exception
         soup = BeautifulSoup(r.text, 'html.parser')
         self.add_children(soup, node)
         self.check_for_input_fields(soup, url)
@@ -278,8 +301,11 @@ class SiteRecon():
         IO().display_title()
         self.target_url()
         self.writer.write_header(self.root.url)
-        self.scan_page(self.root.url, self.root)
-        self.crawl_site(self.root)
+        try:
+            self.scan_page(self.root.url, self.root)
+            self.crawl_site(self.root)
+        except:
+            print("A failure occurred")
         self.writer.log_data(self.all_emails, self.external_links)
 
 

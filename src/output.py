@@ -107,7 +107,7 @@ class Writer:
             None
         """
         f = open(self.file_name, "a")
-        f.write("\n========== EXTERNAL LINKS ==========")
+        f.write("\n========== EXTERNAL LINKS ==========\n")
         for link in external_links:
             f.write(link+"\n")
         f.close()
