@@ -53,15 +53,16 @@ class SiteRecon():
     """
     root = None
     crawl_count = 0
-    crawl_max = 20
-    pause_min = 4
-    pause_max = 10
+    crawl_max = 100
+    pause_min = 10
+    pause_max = 60
     aggression = None
     file_name = None
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
     all_links = set()
     external_links = set()
     all_emails = set()
+    urls_with_forms = set()
     writer = Writer()
 
     def __inti__(self):
@@ -160,7 +161,7 @@ class SiteRecon():
         """
         input_tags = soup.find_all('input')
         if len(input_tags) > 0:
-            IO().input_field_found(url)
+            self.urls_with_forms(url)
 
     def find_emails(self, soup: BeautifulSoup, url: str) -> None:
         """Find the emails in the HTML code
@@ -206,7 +207,7 @@ class SiteRecon():
         Returns:
             None
         """
-        print("SCANNING")
+        print("SCANNING: ", url)
         self.crawl_count += 1
         self.request_pause()
         r = self.get_http_response(url)
@@ -306,7 +307,7 @@ class SiteRecon():
             self.crawl_site(self.root)
         except:
             print("A failure occurred")
-        self.writer.log_data(self.all_emails, self.external_links)
+        self.writer.log_data(self.all_emails, self.external_links, self.urls_with_forms, self.all_links)
 
 
 # Run the program

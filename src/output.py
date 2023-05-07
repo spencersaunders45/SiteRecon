@@ -96,6 +96,27 @@ class Writer:
             f.write(email+"\n")
         f.close()
 
+    def log_urls_with_forms(self, form_list: set) -> None:
+        """
+        
+        """
+        f = open(self.file_name, "a")
+        f.write("\n========== WEBPAGES WITH FORMS ==========\n")
+        for url in form_list:
+            f.write(url + "\n")
+        f.close()
+
+    def log_http_sites(self, all_links: set) -> None:
+        """
+        
+        """
+        f = open(self.file_name, "a")
+        f.write("\n========== HTTP ONLY ==========\n")
+        for link in all_links:
+            if "https" not in link:
+                f.write(link + "\n")
+        f.close()
+
     def log_external_links(self, external_links: set) -> None:
         """Logs the external links found
         
@@ -112,7 +133,7 @@ class Writer:
             f.write(link+"\n")
         f.close()
 
-    def log_data(self, emails: set, external_links: set) -> None:
+    def log_data(self, emails: set, external_links: set, urls_with_forms: set, all_links: set) -> None:
         """Logs the data found during scanning
         
         Parameters:
@@ -120,6 +141,12 @@ class Writer:
             All the emails found during scanning
         external_links : set
             All external links found during scanning
+        urls_with_forms : set
+            All urls that have forms
+        all_links : set
+            All links found when scanning
         """
         self.log_emails(emails)
         self.log_external_links(external_links)
+        self.log_urls_with_forms(urls_with_forms)
+        self.log_http_sites(all_links)
