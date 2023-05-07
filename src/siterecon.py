@@ -59,7 +59,7 @@ class SiteRecon():
     file_name = None
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
     all_links = set()
-    external_links = []
+    external_links = set()
     all_emails = set()
     writer = Writer()
 
@@ -108,7 +108,7 @@ class SiteRecon():
             if link == None:
                 continue
             if not self.is_external_link(link):
-                self.external_links.append(link)
+                self.external_links.add(link)
             else:
                 links.append(link)
         return links
@@ -285,15 +285,10 @@ class SiteRecon():
         """
         IO().display_title()
         self.target_url()
+        self.writer.write_header()
         self.crawl_root_page()
         self.crawl_site(self.root)
-        self.writer
-
-        for email in self.all_emails:
-            print(email)
-        for link in self.all_links:
-            print(link)
-        print("External URLs: ", self.external_links)
+        self.writer.log_data(self.all_emails, self.external_links)
 
 
 # Run the program

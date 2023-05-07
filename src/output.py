@@ -12,7 +12,7 @@ class Writer:
     file_name : str
         The name of the output file
     """
-    def __init__(self, file_name: str):
+    def __init__(self, file_name="output.txt"):
         self.file_name = file_name
         self.visited_sites = list()
 
@@ -30,7 +30,7 @@ class Writer:
         date = time_data.strftime("%x")
         time = time_data.strftime("%X")
         f = open(self.file_name, "a")
-        f.write(f"================= {url} [{time} {date}] =================\n")
+        f.write(f"================= {url} [{time} {date}] =================")
         f.close()
 
     def log_internal_urls(self, url: str, status_code: int) -> None:
@@ -46,9 +46,9 @@ class Writer:
             None
         """
         f = open(self.file_name, "a")
-        f.write("========== INTERNAL URL'S ==========")
+        f.write("\n========== INTERNAL URL'S ==========")
         for url in self.visited_sites:
-            f.write(f"{status_code}: {url}")
+            f.write(f"{status_code}: {url}\n")
         f.close()
 
     def write_log(self, text: str) -> None:
@@ -80,7 +80,7 @@ class Writer:
         site = [status_code, url]
         self.visited_sites.append(site)
 
-    def log_emails(self, emails: list) -> None:
+    def log_emails(self, emails: set) -> None:
         """Logs the emails found
         
         Parameters:
@@ -91,12 +91,12 @@ class Writer:
             None
         """
         f = open(self.file_name, "a")
-        f.write("========== EMAILS ==========")
+        f.write("\n========== EMAILS ==========")
         for email in emails:
-            f.write(email)
+            f.write(email+"\n")
         f.close()
 
-    def log_external_links(self, external_links: list) -> None:
+    def log_external_links(self, external_links: set) -> None:
         """Logs the external links found
         
         Parameters:
@@ -107,11 +107,19 @@ class Writer:
             None
         """
         f = open(self.file_name, "a")
-        f.write("========== EXTERNAL LINKS ==========")
+        f.write("\n========== EXTERNAL LINKS ==========")
         for link in external_links:
-            f.write(link)
+            f.write(link+"\n")
         f.close()
 
-    def log_data(self, emails: list, external_links: list) -> None:
+    def log_data(self, emails: set, external_links: set) -> None:
+        """Logs the data found during scanning
+        
+        Parameters:
+        emails : set
+            All the emails found during scanning
+        external_links : set
+            All external links found during scanning
+        """
         self.log_emails(emails)
         self.log_external_links(external_links)
