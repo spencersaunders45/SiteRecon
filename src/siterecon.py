@@ -1,10 +1,11 @@
 # python libraries
 from time import sleep
+import re
 # external libraries
 from bs4 import BeautifulSoup
-import requests
+from requests import get, Response
 # project imports
-from src.display import IO
+from display import IO
 from node import Node
 
 """
@@ -15,7 +16,7 @@ from node import Node
 todo: save non-domain name links and group them by domain
 todo: find and save emails
 todo: reports site response status
-todo: make settings json file
+//todo: make settings json file
 todo: scan which sites have http
 todo: scan which pages have forms on them
 todo: separate results by status, http protocol, forms on pages
@@ -51,7 +52,7 @@ class SiteRecon():
     url = None
     root = None
     crawl_count = 0
-    crawl_max = None
+    crawl_max = 10
     pause_min = None
     pause_max = None
     aggression = None
@@ -73,7 +74,7 @@ class SiteRecon():
         Returns:
             Response
         """
-        r = requests.get(url, headers=self.headers)
+        r = get(url, headers=self.headers)
         return r
 
     def is_external_link(self, link: str):
@@ -109,55 +110,60 @@ class SiteRecon():
         return links
 
     # Adds children nodes to the parent node
-    def add_children(self, html, parent: Node) -> None:
+    def add_children(self, soup: BeautifulSoup, parent: Node) -> None:
         """Adds links found on the scanned webpage to the parent Node
         
         Parameters:
-        html : Response
-            The response text from the url request
+        soup : BeautifulSoup
+            The parsed html of the webpage
         parent : Node
             The parent node
 
         Returns:
             None
         """
-        soup = BeautifulSoup(html, 'html_parser')
         links = self.find_page_links(soup)
         for link in links:
             child = Node(link)
             parent.add_child(child)
 
-    def check_for_input_fields(self, html, url: str) -> None:
+    def check_for_input_fields(self, soup: BeautifulSoup, url: str) -> None:
         """Checks if the scanned webpage has any input fields
         
         Parameters:
-        html : Response
-            The text value of the webpage response
+        soup : BeautifulSoup
+            The parsed html of the webpage
         url : str
             The webpage url
 
         Returns:
             None
         """
-        soup = BeautifulSoup(html, 'html_parser')
+        # todo: write findings to report
         input_tags = soup.find_all('input')
         if len(input_tags) > 0:
             IO().input_field_found()
 
-    #? Do I need this?
-    def check_status_code(self, status):
-        first_digit = int(status[0])
-        match first_digit:
-            case 1:
-                return [False]
-            case 2:
-                return [True]
-            case 3:
-                return [False]
-            case 4:
-                return [False]
-            case 5:
-                return [False]
+    def find_emails(self, soup: BeautifulSoup, url: str) -> None:
+        """Find the emails in the HTML code
+        
+        Parameters:
+        soup : BeautifulSoupu
+            The parsed html of the webpage
+        url : str
+            The webpage url
+
+        Returns:
+            None
+        """
+        # todo: write findings to report
+        regex_email = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        for text in soup.stripped_strings:
+            emails = re.search(regex_email, text)
+            if emails:
+                email_list = emails.group()
+                self.all_emails.add(email_list)
+
 
     def scan_page(self, url: str, node: Node) -> None:
         """Scans the html of the page
@@ -171,14 +177,12 @@ class SiteRecon():
         Returns:
             None
         """
+        self.crawl_count += 1
         r = self.get_http_response(url)
-        response = self.check_status_code(str(r.status_code))
-        if response[0]:
-            IO.status_report_good(r.status_code, url)
-            self.add_children(r.text, node)
-            self.check_for_input_fields(r.text, url)
-        else:
-            IO.status_report_bad(r.status_code, url)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        self.add_children(soup, node)
+        self.check_for_input_fields(soup, url)
+        self.find_emails(soup, url)
 
     # Goes through the Node in a breadth first search
     def crawl_site(self, parent: Node) -> None:
@@ -191,7 +195,6 @@ class SiteRecon():
         Returns:
             None
         """
-        self.crawl_count += 1
         children = parent.get_children()
         # exit case
         if self.crawl_count > self.crawl_max or len(children) == 0:
@@ -203,8 +206,37 @@ class SiteRecon():
         for child in children:
             self.crawl_site(child)
 
-    def validate_command(self, command):
+    def validate_command(self, command: str):
         pass
+
+    def split_commands(self, command: str) -> str:
+        """Turns the command into a list
+        
+        Parameters:
+        command : str
+            The commands entered by the user
+
+        Returns:
+            list
+        """
+        parsed_command = command.split(' ')
+        return parsed_command
+
+    def return_url(self, command_list: list) -> str:
+        """Returns the url from the command list
+        
+        Parameters:
+        command : list
+            The list of commands given by the user
+
+        Returns:
+            str : The target url
+        """
+        url = command_list[0]
+        if 'http' in url or 'https' in url:
+            return url
+        else:
+            return "https://" + url
 
     def target_url(self) -> None:
         """Gets the target url from the user and starts the scan
@@ -215,15 +247,14 @@ class SiteRecon():
         Returns:
             None
         """
-        command = IO.get_command()
-        self.validate_command(command)
-        r = self.get_http_response("https://" + self.url)
-        if r.status_code == 200:
-            self.root = Node("https://" + self.url)
-            # call function to get and add root children
-            self.crawl_site(self.root)
-        else:
-            print("add to else statement [target_url]")
+        command = IO().get_command()
+        # self.validate_command(command)
+        command_list = self.split_commands(command)
+        target_url = self.return_url(command_list)
+        # Create the root Node for the website tree
+        self.root = Node(target_url)
+        # Start crawling the site!
+        self.crawl_site(self.root)
 
     def run_program(self) -> None:
         """Starts the process of scanning the website
@@ -234,8 +265,12 @@ class SiteRecon():
         Returns:
             None
         """
-        IO.display_title()
+        IO().display_title()
         self.target_url()
+        print("Emails: ", self.all_emails)
+        print("URLs: ", self.all_links)
+        print("External URLs: ", self.external_links)
+
 
 # Run the program
 SiteRecon().run_program()

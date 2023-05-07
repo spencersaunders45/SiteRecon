@@ -5,10 +5,12 @@
 
 # Project Files
 testing.py
+sandbox.py
 *.txt
 
 # Project Folders
 .pytest_cache
+.vscode
 
 # User-specific files
 *.rsuser
