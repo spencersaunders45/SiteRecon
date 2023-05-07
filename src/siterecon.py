@@ -57,12 +57,13 @@ class SiteRecon():
     pause_max = None
     aggression = None
     file_name = None
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
+    all_links = set()
+    external_links = []
+    all_emails = set()
 
     def __inti__(self):
-        self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
-        self.all_links = set()
-        self.external_links = []
-        self.all_emails = set()
+        pass
 
     def get_http_response(self, url):
         """Gets the response data from the URL
@@ -184,6 +185,23 @@ class SiteRecon():
         self.check_for_input_fields(soup, url)
         self.find_emails(soup, url)
 
+    def crawl_root_page(self):
+        """Crawls the root page and adds the children
+        
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
+        self.crawl_count += 1
+        url = self.root.url
+        r = self.get_http_response(url)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        self.add_children(soup, self.root)
+        self.check_for_input_fields(soup, url)
+        self.find_emails(soup, url)
+
     # Goes through the Node in a breadth first search
     def crawl_site(self, parent: Node) -> None:
         """Crawls through all the pages of the website
@@ -253,8 +271,6 @@ class SiteRecon():
         target_url = self.return_url(command_list)
         # Create the root Node for the website tree
         self.root = Node(target_url)
-        # Start crawling the site!
-        self.crawl_site(self.root)
 
     def run_program(self) -> None:
         """Starts the process of scanning the website
@@ -267,8 +283,13 @@ class SiteRecon():
         """
         IO().display_title()
         self.target_url()
-        print("Emails: ", self.all_emails)
-        print("URLs: ", self.all_links)
+        self.crawl_root_page()
+        self.crawl_site(self.root)
+
+        for email in self.all_emails:
+            print(email)
+        for link in self.all_links:
+            print(link)
         print("External URLs: ", self.external_links)
 
 
