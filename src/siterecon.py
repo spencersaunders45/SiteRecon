@@ -14,7 +14,7 @@ from node import Node
     //todo: passive mode - randomizes wait time between requests
 //todo: option to save logs
 todo: save non-domain name links and group them by domain
-todo: find and save emails
+//todo: find and save emails
 todo: reports site response status
 //todo: make settings json file
 todo: scan which sites have http
