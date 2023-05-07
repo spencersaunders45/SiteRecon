@@ -57,11 +57,61 @@ class Writer:
         Parameters:
         text : str
             The text to be written to the output file
+
+        Returns:
+            None
         """
         f = open(self.file_name, "a")
         f.write(text + "\n")
         f.close()
 
     def add_url(self, status_code: int, url: str) -> None:
+        """Adds the url to the list
+        
+        Parameters:
+        status_code : int
+            The status code returned from the http request
+        url : str
+            The url link
+
+        Returns:
+            None
+        """
         site = [status_code, url]
         self.visited_sites.append(site)
+
+    def log_emails(self, emails: list) -> None:
+        """Logs the emails found
+        
+        Parameters:
+        emails : list
+            All the emails found while scanned
+
+        Returns:
+            None
+        """
+        f = open(self.file_name, "a")
+        f.write("========== EMAILS ==========")
+        for email in emails:
+            f.write(email)
+        f.close()
+
+    def log_external_links(self, external_links: list) -> None:
+        """Logs the external links found
+        
+        Parameters:
+        external_links : list
+            All the external links found on the website
+
+        Returns:
+            None
+        """
+        f = open(self.file_name, "a")
+        f.write("========== EXTERNAL LINKS ==========")
+        for link in external_links:
+            f.write(link)
+        f.close()
+
+    def log_data(self, emails: list, external_links: list) -> None:
+        self.log_emails(emails)
+        self.log_external_links(external_links)

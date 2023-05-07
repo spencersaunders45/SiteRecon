@@ -287,6 +287,7 @@ class SiteRecon():
         self.target_url()
         self.crawl_root_page()
         self.crawl_site(self.root)
+        self.writer
 
         for email in self.all_emails:
             print(email)
