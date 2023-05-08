@@ -53,7 +53,7 @@ class SiteRecon():
     """
     root = None
     crawl_count = 0
-    crawl_max = 100
+    crawl_max = 30
     pause_min = 10
     pause_max = 60
     aggression = None
@@ -63,6 +63,7 @@ class SiteRecon():
     external_links = set()
     all_emails = set()
     urls_with_forms = set()
+    phone_numbers = set()
     writer = Writer()
 
     def __inti__(self):
@@ -81,7 +82,8 @@ class SiteRecon():
         try:
             r = get(url, headers=self.headers)
             return r
-        except:
+        except Exception as e:
+            print(e)
             return Exception
 
     def is_external_link(self, link: str):
@@ -115,13 +117,28 @@ class SiteRecon():
             link = a_tag.get('href')
             if link == None or len(link) == 0:
                 continue
+            # Skips single slashes and all #
+            if len(link) == 1 and link == "/":
+                continue
+            if link[0] == "#":
+                continue
             # Create full link if needed
-            if link[0] == "/" or link[0] == "#":
+            if link[0] == "/":
                 link = url + link
             elif "/" not in link and "." not in link:
                 link = url + "/" + link
             elif "/" in link and "." not in link and link[0] != "/":
                 link = url + "/" + link
+            # Extract mailto: links
+            if "mailto:" in link:
+                split_link = link.split("mailto:")
+                self.all_emails.add(split_link[1])
+                continue
+            # Extract tel: links
+            if "tel:" in link:
+                tel = link.split("tel:")
+                self.phone_numbers.add(tel[1])
+                continue
             # Sort links
             if not self.is_external_link(link):
                 self.external_links.add(link)
@@ -144,8 +161,9 @@ class SiteRecon():
         """
         links = self.find_page_links(soup, parent.url)
         for link in links:
-            child = Node(link)
-            parent.add_child(child)
+            if link not in self.all_links:
+                child = Node(link)
+                parent.add_child(child)
 
     def check_for_input_fields(self, soup: BeautifulSoup, url: str) -> None:
         """Checks if the scanned webpage has any input fields
@@ -161,7 +179,7 @@ class SiteRecon():
         """
         input_tags = soup.find_all('input')
         if len(input_tags) > 0:
-            self.urls_with_forms(url)
+            self.urls_with_forms.add(url)
 
     def find_emails(self, soup: BeautifulSoup, url: str) -> None:
         """Find the emails in the HTML code
@@ -302,11 +320,15 @@ class SiteRecon():
         IO().display_title()
         self.target_url()
         self.writer.write_header(self.root.url)
+        self.all_links.add(self.root.url)
         try:
             self.scan_page(self.root.url, self.root)
             self.crawl_site(self.root)
-        except:
+        except Exception as e:
+            print(e)
             print("A failure occurred")
+        # self.scan_page(self.root.url, self.root)
+        # self.crawl_site(self.root)
         self.writer.log_data(self.all_emails, self.external_links, self.urls_with_forms, self.all_links)
 
 
