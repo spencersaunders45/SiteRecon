@@ -53,11 +53,12 @@ class SiteRecon():
     """
     root = None
     crawl_count = 0
-    crawl_max = 30
-    pause_min = 10
-    pause_max = 60
+    crawl_max = 6
+    pause_min = 5
+    pause_max = 13
     aggression = None
     file_name = None
+    basic_url = None
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
     all_links = set()
     external_links = set()
@@ -96,7 +97,7 @@ class SiteRecon():
         Returns:
             bool
         """
-        return self.root.url in link
+        return self.basic_url in link
 
     #  Checks if a link is internal or external and adds them to the appropriate list
     def find_page_links(self, soup: BeautifulSoup, url: str) -> None:
@@ -308,6 +309,16 @@ class SiteRecon():
         # Create the root Node for the website tree
         self.root = Node(target_url)
 
+    def get_basic_url(self) -> None:
+        """
+        
+        """
+        if "https://www." in self.root.url:
+            basic_url = self.root.url.split("https://www.")
+        elif "https://" in self.root.url:
+            basic_url = self.root.url.split("https://")
+        self.basic_url = basic_url[1]
+
     def run_program(self) -> None:
         """Starts the process of scanning the website
         
@@ -319,6 +330,7 @@ class SiteRecon():
         """
         IO().display_title()
         self.target_url()
+        self.get_basic_url()
         self.writer.write_header(self.root.url)
         self.all_links.add(self.root.url)
         try:
