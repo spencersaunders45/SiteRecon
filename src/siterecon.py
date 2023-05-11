@@ -53,7 +53,7 @@ class SiteRecon():
     """
     root = None
     crawl_count = 0
-    crawl_max = 6
+    crawl_max = 25
     pause_min = 5
     pause_max = 13
     aggression = None
@@ -232,6 +232,7 @@ class SiteRecon():
         r = self.get_http_response(url)
         if r == Exception:
             raise Exception
+        self.writer.log_internal_urls(url, r.status_code)
         soup = BeautifulSoup(r.text, 'html.parser')
         self.add_children(soup, node)
         self.check_for_input_fields(soup, url)
