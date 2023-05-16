@@ -1,4 +1,5 @@
 from rich.console import Console
+from rich.progress import Progress
 console = Console()
 
 class IO:
@@ -22,8 +23,10 @@ class IO:
     |__________| |__________|     |__|     |_________|   |___|    \___\ |_________|  |_________|  |__________|  |____|     \____|
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, crawl_max):
+        self.crawl_max = crawl_max
+        self.progress = Progress()
+        self.progress_bar = self.progress.add_task("Scanning", total=crawl_max, start=False, visible=True)
 
     def display_title(self) -> None:
         """Display the application title"""
@@ -129,6 +132,20 @@ class IO:
             None
         """
         console.print(f'[[bold red]x[/bold red]]: {value} is not a number')
+
+    def update_progress(self, url: str, count: int) -> None:
+        """Displays the progress of the search
+        
+        Parameters:
+        url:
+            The current site that is being searched
+
+        Returns:
+            None
+        """
+        if count <= 1:
+            self.progress.start_task(self.progress_bar)
+        self.progress.update(self.progress_bar, advance=1)
 
     def display_help(self) -> None:
         """Displays the flags"""

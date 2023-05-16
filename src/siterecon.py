@@ -5,6 +5,7 @@ from random import randint
 # external libraries
 from bs4 import BeautifulSoup
 from requests import get, Response
+from rich.progress import track, Progress
 # project imports
 from display import IO
 from node import Node
@@ -66,6 +67,7 @@ class SiteRecon():
     urls_with_forms = set()
     phone_numbers = set()
     writer = Writer()
+    io = IO(crawl_max)
 
     def __inti__(self):
         pass
@@ -182,7 +184,7 @@ class SiteRecon():
         if len(input_tags) > 0:
             self.urls_with_forms.add(url)
 
-    def find_emails(self, soup: BeautifulSoup, url: str) -> None:
+    def find_emails(self, soup: BeautifulSoup) -> None:
         """Find the emails in the HTML code
         
         Parameters:
@@ -226,8 +228,9 @@ class SiteRecon():
         Returns:
             None
         """
-        print("SCANNING: ", url)
+        # print("SCANNING: ", url)
         self.crawl_count += 1
+        self.io.update_progress(url, self.crawl_count)
         self.request_pause()
         r = self.get_http_response(url)
         if r == Exception:
@@ -303,7 +306,7 @@ class SiteRecon():
         Returns:
             None
         """
-        command = IO().get_command()
+        command = self.io.get_command()
         # self.validate_command(command)
         command_list = self.split_commands(command)
         target_url = self.return_url(command_list)
@@ -329,19 +332,19 @@ class SiteRecon():
         Returns:
             None
         """
-        IO().display_title()
+        self.io.display_title()
         self.target_url()
         self.get_basic_url()
         self.writer.write_header(self.root.url)
         self.all_links.add(self.root.url)
-        try:
-            self.scan_page(self.root.url, self.root)
-            self.crawl_site(self.root)
-        except Exception as e:
-            print(e)
-            print("A failure occurred")
-        # self.scan_page(self.root.url, self.root)
-        # self.crawl_site(self.root)
+        # try:
+        #     self.scan_page(self.root.url, self.root)
+        #     self.crawl_site(self.root)
+        # except Exception as e:
+        #     print(e)
+        #     print("A failure occurred")
+        self.scan_page(self.root.url, self.root)
+        self.crawl_site(self.root)
         self.writer.log_data(self.all_emails, self.external_links, self.urls_with_forms, self.all_links)
 
 
