@@ -239,7 +239,7 @@ class SiteRecon():
         soup = BeautifulSoup(r.text, 'html.parser')
         self.add_children(soup, node)
         self.check_for_input_fields(soup, url)
-        self.find_emails(soup, url)
+        self.find_emails(soup)
 
     # Goes through the Node in a breadth first search
     def crawl_site(self, parent: Node) -> None:

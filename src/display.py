@@ -135,7 +135,7 @@ class IO:
 
     def update_progress(self, url: str, count: int) -> None:
         """Displays the progress of the search
-        
+
         Parameters:
         url:
             The current site that is being searched
