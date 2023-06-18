@@ -2,10 +2,12 @@
 from time import sleep
 import re
 from random import randint
+from multiprocessing import Process
 # external libraries
 from bs4 import BeautifulSoup
 from requests import get, Response
-from rich.progress import track, Progress
+from rich.progress import Progress
+from rich.live import Live
 # project imports
 from display import IO
 from node import Node
@@ -59,6 +61,7 @@ class SiteRecon():
     aggression = None
     file_name = None
     basic_url = None
+    current_url = None
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
     all_links = set()
     external_links = set()
@@ -334,7 +337,15 @@ class SiteRecon():
         """
         self.aggression = aggression
 
-    def run_program(self) -> None:
+    def run_program(
+            self,
+            url: str,
+            count: int,
+            aggression: str,
+            c_aggression: str, 
+            file_path: str, 
+            file_name: str
+            ) -> None:
         """Starts the process of scanning the website
         
         Parameters:
@@ -348,6 +359,10 @@ class SiteRecon():
         self.get_basic_url()
         self.writer.write_header(self.root.url)
         self.all_links.add(self.root.url)
+        progress_proc = Process(target=self.display_progress)
+        live_text_proc = Process(target=self.display_current_url)
+        progress_proc.start()
+        live_text_proc.start()
         # try:
         #     self.scan_page(self.root.url, self.root)
         #     self.crawl_site(self.root)
@@ -356,4 +371,32 @@ class SiteRecon():
         #     print("A failure occurred")
         self.scan_page(self.root.url, self.root)
         self.crawl_site(self.root)
+        progress_proc.join()
+        live_text_proc.join()
         self.writer.log_data(self.all_emails, self.external_links, self.urls_with_forms, self.all_links)
+
+
+    def display_progress(self):
+        with Progress() as progress:
+            scan_progress = progress.add_task("[red]Progress...", total=self.crawl_max)
+            last_count = self.crawl_count
+
+            while not progress.finished:
+                update = 0
+                if self.crawl_count > last_count:
+                    update = self.crawl_count - last_count
+                    last_count = self.crawl_count
+                progress.update(scan_progress, advance=update)
+                sleep(1)
+
+
+    def display_current_url(self):
+        with Live() as live:
+            while self.crawl_max < self.crawl_count:
+                live.update(f"[blue]Scanning {self.current_url}")
+                live.refresh
+                sleep(1)
+
+
+    def display_current_scan(self):
+        pass

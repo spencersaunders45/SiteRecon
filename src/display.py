@@ -1,3 +1,4 @@
+from time import sleep
 from rich.console import Console
 from rich.progress import Progress
 console = Console()
@@ -94,9 +95,12 @@ class IO:
         Returns:
             None
         """
-        if count <= 1:
-            self.progress.start_task(self.progress_bar)
-        self.progress.update(self.progress_bar, advance=1)
+        with Progress() as progress:
+            task1 = progress.add_task("[red]Scanning...", total=count)
+
+            while not progress.finished:
+                progress.update(task1, advance=value, description=f"[red]Scanning...[{url}]")
+                sleep(.5)
 
 
     def display_defaults(self) -> None:
