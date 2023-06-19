@@ -242,6 +242,7 @@ class SiteRecon():
         Returns:
             None
         """
+        print(parent.url)
         children = parent.get_children()
         # exit case
         if self.crawl_count > self.crawl_max or len(children) == 0:
@@ -305,11 +306,18 @@ class SiteRecon():
         """
         Strips the url from the http text
         """
+        basic_url = None
         if "https://www." in self.root.url:
-            basic_url = self.root.url.split("https://www.")
+            basic_url = self.root.url.split("https://www.")[1]
         elif "https://" in self.root.url:
-            basic_url = self.root.url.split("https://")
-        self.basic_url = basic_url[1]
+            basic_url = self.root.url.split("https://")[1]
+        elif "http://www." in self.root.url:
+            basic_url = self.root.url.split("http://www.")[1]
+        elif "http://" in self.root.url:
+            basic_url = self.root.url.split("http://")[1]
+        else:
+            basic_url = self.root.url
+        self.basic_url = basic_url
 
 
     def run_program(self) -> None:
