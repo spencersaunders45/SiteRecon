@@ -2,7 +2,6 @@ from scanner import SiteRecon
 from argparse import ArgumentParser
 
 
-sr = SiteRecon()
 parser = ArgumentParser(
     prog="siterecon",
     description="Discover information about a given website.",
@@ -73,7 +72,7 @@ defaults.add_argument(
     '--default-filename',
     type=str,
     action="store",
-    metavar="<default filename>",
+    metavar="<file name>",
     help="Change the default filename.",
 )
 defaults.add_argument(
@@ -81,7 +80,7 @@ defaults.add_argument(
     '--default-file-path',
     type=str,
     action="store",
-    metavar="<default file path>",
+    metavar="<path>",
     help="Change the default file path.",
 )
 defaults.add_argument(
@@ -89,7 +88,16 @@ defaults.add_argument(
     '--default-count',
     type=str,
     action="store",
-    metavar="<default count>",
+    metavar="<int>",
     help="Change the default count.",
 )
 args = parser.parse_args()
+sr = SiteRecon(
+    args.url,
+    args.aggression,
+    args.custom_aggression,
+    args.count,
+    args.file_path,
+    args.filename
+    )
+sr.run_program()

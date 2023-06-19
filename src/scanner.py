@@ -29,30 +29,6 @@ todo: separate results by status, http protocol, forms on pages
 
 
 class SiteRecon():
-    """Runs the application
-    
-    Attributes:
-    url : str
-        The root URL
-    root : Node
-        The root of the Node
-    all_links : set
-        A set of all collected links with the same given base domain
-    crawl_count : int
-        The number of sites scanned
-    crawl_max : int
-        The max number of sites to scan
-    pause_min : int
-        The minimum time to wait before requesting another site
-    pause_max : int
-        The max time to wait before requesting another site
-    aggression : str
-        The aggression mode 
-    file_name : str
-        The name of the output file
-    headers : str
-        The headers sent in the request
-    """
     root = None
     crawl_count = 0
     crawl_max = 25
@@ -71,8 +47,21 @@ class SiteRecon():
     writer = Writer()
     io = IO(crawl_max)
 
-    def __inti__(self):
-        pass
+    def __init__(
+            self,
+            url: str,
+            aggression: str,
+            c_aggression: str,
+            count: int, 
+            file_path: str,
+            file_name: str
+            ):
+        self.target_url = url
+        self.aggression = aggression
+        self.c_aggression = c_aggression
+        self.crawl_max = count
+        self.file_name = file_name,
+        self.file_path = file_path
 
     def get_http_response(self, url):
         """Gets the response data from the URL
@@ -232,7 +221,6 @@ class SiteRecon():
         """
         # print("SCANNING: ", url)
         self.crawl_count += 1
-        self.io.update_progress(url, self.crawl_count)
         self.request_pause()
         r = self.get_http_response(url)
         if r == Exception:
@@ -299,25 +287,23 @@ class SiteRecon():
         else:
             return "https://" + url
 
-    def target_url(self) -> None:
-        """Gets the target url from the user and starts the scan
+    def create_tree(self) -> None:
+        """
+        Gets the target url from the user and starts the scan
 
         Parameters:
-            None
+            url: the target url for scanning
 
         Returns:
             None
         """
-        command = self.io.get_command()
-        # self.validate_command(command)
-        command_list = self.split_commands(command)
-        target_url = self.return_url(command_list)
         # Create the root Node for the website tree
-        self.root = Node(target_url)
+        self.root = Node(self.target_url)
+        self.current_url = self.target_url
 
     def get_basic_url(self) -> None:
         """
-        
+        Strips the url from the http text
         """
         if "https://www." in self.root.url:
             basic_url = self.root.url.split("https://www.")
@@ -325,27 +311,8 @@ class SiteRecon():
             basic_url = self.root.url.split("https://")
         self.basic_url = basic_url[1]
 
-    def set_aggression(self, aggression: str) -> None:
-        """
-        Sets the aggression value
 
-        Parameters:
-            aggression: The aggression value
-
-        Returns:
-            None
-        """
-        self.aggression = aggression
-
-    def run_program(
-            self,
-            url: str,
-            count: int,
-            aggression: str,
-            c_aggression: str, 
-            file_path: str, 
-            file_name: str
-            ) -> None:
+    def run_program(self) -> None:
         """Starts the process of scanning the website
         
         Parameters:
@@ -355,7 +322,7 @@ class SiteRecon():
             None
         """
         self.io.display_title()
-        self.target_url()
+        self.create_tree()
         self.get_basic_url()
         self.writer.write_header(self.root.url)
         self.all_links.add(self.root.url)
@@ -363,14 +330,14 @@ class SiteRecon():
         live_text_proc = Process(target=self.display_current_url)
         progress_proc.start()
         live_text_proc.start()
-        # try:
-        #     self.scan_page(self.root.url, self.root)
-        #     self.crawl_site(self.root)
-        # except Exception as e:
-        #     print(e)
-        #     print("A failure occurred")
-        self.scan_page(self.root.url, self.root)
-        self.crawl_site(self.root)
+        try:
+            self.scan_page(self.root.url, self.root)
+            self.crawl_site(self.root)
+        except Exception as e:
+            print(e)
+            print("A failure occurred")
+        # self.scan_page(self.root.url, self.root)
+        # self.crawl_site(self.root)
         progress_proc.join()
         live_text_proc.join()
         self.writer.log_data(self.all_emails, self.external_links, self.urls_with_forms, self.all_links)
@@ -393,10 +360,6 @@ class SiteRecon():
     def display_current_url(self):
         with Live() as live:
             while self.crawl_max < self.crawl_count:
-                live.update(f"[blue]Scanning {self.current_url}")
+                live.update(f"[blue]Scanning: {self.current_url}")
                 live.refresh
                 sleep(1)
-
-
-    def display_current_scan(self):
-        pass
