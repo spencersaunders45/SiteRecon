@@ -2,7 +2,8 @@
 from time import sleep
 import re
 from random import randint
-from multiprocessing import Process
+from multiprocessing import Process, Value
+import ctypes
 # external libraries
 from bs4 import BeautifulSoup
 from requests import get, Response
@@ -37,7 +38,6 @@ class SiteRecon():
     aggression = None
     file_name = None
     basic_url = None
-    current_url = None
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'}
     all_links = set()
     external_links = set()
@@ -46,6 +46,7 @@ class SiteRecon():
     phone_numbers = set()
     writer = Writer()
     io = IO(crawl_max)
+
 
     def __init__(
             self,
@@ -62,6 +63,8 @@ class SiteRecon():
         self.crawl_max = count
         self.file_name = file_name,
         self.file_path = file_path
+        self.current_url = Value(ctypes.c_char_p, "None")
+
 
     def get_http_response(self, url):
         """Gets the response data from the URL
@@ -80,6 +83,7 @@ class SiteRecon():
             print(e)
             return Exception
 
+
     def is_external_link(self, link: str):
         """Checks if the found url shares the base domain of the root url
         
@@ -91,6 +95,7 @@ class SiteRecon():
             bool
         """
         return self.basic_url in link
+
 
     #  Checks if a link is internal or external and adds them to the appropriate list
     def find_page_links(self, soup: BeautifulSoup, url: str) -> None:
@@ -140,7 +145,7 @@ class SiteRecon():
                 links.append(link)
         return links
 
-    # Adds children nodes to the parent node
+
     def add_children(self, soup: BeautifulSoup, parent: Node) -> None:
         """Adds links found on the scanned webpage to the parent Node
         
@@ -159,6 +164,7 @@ class SiteRecon():
                 child = Node(link)
                 parent.add_child(child)
 
+
     def check_for_input_fields(self, soup: BeautifulSoup, url: str) -> None:
         """Checks if the scanned webpage has any input fields
         
@@ -174,6 +180,7 @@ class SiteRecon():
         input_tags = soup.find_all('input')
         if len(input_tags) > 0:
             self.urls_with_forms.add(url)
+
 
     def find_emails(self, soup: BeautifulSoup) -> None:
         """Find the emails in the HTML code
@@ -194,6 +201,7 @@ class SiteRecon():
                 email_list = emails.group()
                 self.all_emails.add(email_list)
 
+
     def request_pause(self) -> None:
         """Pauses between requests
         
@@ -206,6 +214,7 @@ class SiteRecon():
         if self.pause_max > 0:
             wait_period = randint(self.pause_min, self.pause_max)
             sleep(wait_period)
+
 
     def scan_page(self, url: str, node: Node) -> None:
         """Scans the html of the page
@@ -220,6 +229,7 @@ class SiteRecon():
             None
         """
         # print("SCANNING: ", url)
+        self.current_url.value = url
         self.crawl_count += 1
         self.request_pause()
         r = self.get_http_response(url)
@@ -231,7 +241,7 @@ class SiteRecon():
         self.check_for_input_fields(soup, url)
         self.find_emails(soup)
 
-    # Goes through the Node in a breadth first search
+
     def crawl_site(self, parent: Node) -> None:
         """Crawls through all the pages of the website
         
@@ -256,8 +266,6 @@ class SiteRecon():
         for child in children:
             self.crawl_site(child)
 
-    def validate_command(self, command: str):
-        pass
 
     def split_commands(self, command: str) -> str:
         """Turns the command into a list
@@ -271,6 +279,7 @@ class SiteRecon():
         """
         parsed_command = command.split(' ')
         return parsed_command
+
 
     def return_url(self, command_list: list) -> str:
         """Returns the url from the command list
@@ -288,6 +297,7 @@ class SiteRecon():
         else:
             return "https://" + url
 
+
     def create_tree(self) -> None:
         """
         Gets the target url from the user and starts the scan
@@ -300,7 +310,7 @@ class SiteRecon():
         """
         # Create the root Node for the website tree
         self.root = Node(self.target_url)
-        self.current_url = self.target_url
+
 
     def get_basic_url(self) -> None:
         """
@@ -335,9 +345,7 @@ class SiteRecon():
         self.writer.write_header(self.root.url)
         self.all_links.add(self.root.url)
         progress_proc = Process(target=self.display_progress)
-        live_text_proc = Process(target=self.display_current_url)
         progress_proc.start()
-        live_text_proc.start()
         try:
             self.scan_page(self.root.url, self.root)
             self.crawl_site(self.root)
@@ -347,7 +355,6 @@ class SiteRecon():
         # self.scan_page(self.root.url, self.root)
         # self.crawl_site(self.root)
         progress_proc.join()
-        live_text_proc.join()
         self.writer.log_data(self.all_emails, self.external_links, self.urls_with_forms, self.all_links)
 
 
@@ -359,15 +366,8 @@ class SiteRecon():
             while not progress.finished:
                 update = 0
                 if self.crawl_count > last_count:
+                    progress.print(self.current_url.value)
                     update = self.crawl_count - last_count
                     last_count = self.crawl_count
                 progress.update(scan_progress, advance=update)
-                sleep(1)
-
-
-    def display_current_url(self):
-        with Live() as live:
-            while self.crawl_max < self.crawl_count:
-                live.update(f"[blue]Scanning: {self.current_url}")
-                live.refresh
                 sleep(1)
