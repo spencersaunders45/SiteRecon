@@ -25,10 +25,8 @@ class IO:
     """
 
 
-    def __init__(self, crawl_max):
-        self.crawl_max = crawl_max
-        self.progress = Progress()
-        self.progress_bar = self.progress.add_task("Scanning", total=crawl_max, start=False, visible=True)
+    def __init__(self):
+        pass
 
 
     def display_title(self) -> None:
@@ -83,32 +81,3 @@ class IO:
             None
         """
         console.log(f"[[bold green]✓[/bold green]]: [blue underline]{url}[/blue underline]")
-
-
-    def update_progress(self, url: str, count: int) -> None:
-        """Displays the progress of the search
-
-        Parameters:
-        url:
-            The current site that is being searched
-
-        Returns:
-            None
-        """
-        with Progress() as progress:
-            task1 = progress.add_task("[red]Scanning...", total=count)
-
-            while not progress.finished:
-                progress.update(task1, advance=value, description=f"[red]Scanning...[{url}]")
-                sleep(.5)
-
-
-    def display_defaults(self) -> None:
-        """Reports that a settings.json file was not found"""
-        try:
-            f = open("settings.json", "r")
-            settings = f.read()
-            f.close()
-            console.print(settings)
-        except:
-            console.print("[[red]x[/red]] No settings file found.")

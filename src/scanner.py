@@ -2,7 +2,7 @@
 from time import sleep
 import re
 from random import randint
-from multiprocessing import Process, Value
+from multiprocessing import Process, Value, Manager
 import ctypes
 # external libraries
 from bs4 import BeautifulSoup
@@ -31,8 +31,7 @@ todo: separate results by status, http protocol, forms on pages
 
 class SiteRecon():
     root = None
-    crawl_count = 0
-    crawl_max = 25
+    crawl_count = Value('i',0)
     pause_min = 5
     pause_max = 13
     aggression = None
@@ -45,7 +44,7 @@ class SiteRecon():
     urls_with_forms = set()
     phone_numbers = set()
     writer = Writer()
-    io = IO(crawl_max)
+    io = IO()
 
 
     def __init__(
@@ -60,10 +59,10 @@ class SiteRecon():
         self.target_url = url
         self.aggression = aggression
         self.c_aggression = c_aggression
-        self.crawl_max = count
+        self.crawl_max = Value('i',count)
         self.file_name = file_name,
         self.file_path = file_path
-        self.current_url = Value(ctypes.c_char_p, "None")
+        self.current_url = Manager().Value(str, url)
 
 
     def get_http_response(self, url):
@@ -228,9 +227,8 @@ class SiteRecon():
         Returns:
             None
         """
-        # print("SCANNING: ", url)
         self.current_url.value = url
-        self.crawl_count += 1
+        self.crawl_count.value += 1
         self.request_pause()
         r = self.get_http_response(url)
         if r == Exception:
@@ -252,14 +250,13 @@ class SiteRecon():
         Returns:
             None
         """
-        print(parent.url)
         children = parent.get_children()
         # exit case
-        if self.crawl_count > self.crawl_max or len(children) == 0:
+        if self.crawl_count.value > self.crawl_max.value or len(children) == 0:
             return
         # Scan each child url
         for child in children:
-            if self.crawl_count > self.crawl_max:
+            if self.crawl_count.value > self.crawl_max.value:
                 break
             self.scan_page(child.url, child)
         # recursively call children nodes
@@ -282,7 +279,7 @@ class SiteRecon():
 
 
     def return_url(self, command_list: list) -> str:
-        """Returns the url from the command list
+        """Adds http to url if not there
         
         Parameters:
         command : list
@@ -329,10 +326,23 @@ class SiteRecon():
             basic_url = self.root.url
         self.basic_url = basic_url
 
+    
+    def add_http(self) -> None:
+        """
+        Adds https to the url if it is not there
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
+        if 'http' not in self.root.url or 'https' not in self.root.url:
+            self.root.url = 'https://' + self.root.url
 
     def run_program(self) -> None:
         """Starts the process of scanning the website
-        
+
         Parameters:
             None
 
@@ -342,32 +352,33 @@ class SiteRecon():
         self.io.display_title()
         self.create_tree()
         self.get_basic_url()
+        self.add_http()
         self.writer.write_header(self.root.url)
         self.all_links.add(self.root.url)
         progress_proc = Process(target=self.display_progress)
         progress_proc.start()
-        try:
-            self.scan_page(self.root.url, self.root)
-            self.crawl_site(self.root)
-        except Exception as e:
-            print(e)
-            print("A failure occurred")
-        # self.scan_page(self.root.url, self.root)
-        # self.crawl_site(self.root)
+        # try:
+        #     self.scan_page(self.root.url, self.root)
+        #     self.crawl_site(self.root)
+        # except Exception as e:
+        #     print(e)
+        #     print("A failure occurred")
+        self.scan_page(self.root.url, self.root)
+        self.crawl_site(self.root)
         progress_proc.join()
         self.writer.log_data(self.all_emails, self.external_links, self.urls_with_forms, self.all_links)
 
 
     def display_progress(self):
         with Progress() as progress:
-            scan_progress = progress.add_task("[red]Progress...", total=self.crawl_max)
-            last_count = self.crawl_count
-
+            scan_progress = progress.add_task("[red]Progress...", total=self.crawl_max.value)
+            last_count = self.crawl_count.value
+            progress.console.print(self.current_url.value)
             while not progress.finished:
                 update = 0
-                if self.crawl_count > last_count:
-                    progress.print(self.current_url.value)
-                    update = self.crawl_count - last_count
-                    last_count = self.crawl_count
+                if self.crawl_count.value > last_count:
+                    progress.console.print(self.current_url.value)
+                    update = self.crawl_count.value - last_count
+                    last_count = self.crawl_count.value
                 progress.update(scan_progress, advance=update)
                 sleep(1)
