@@ -43,7 +43,7 @@ output.add_argument(
     '-fp',
     '--filepath',
     help="Location of where you want the output file.",
-    default=".",
+    default="output.txt",
     action="store",
     type=str,
     metavar="<path>"

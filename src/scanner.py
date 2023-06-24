@@ -17,8 +17,8 @@ from output import Writer
 class SiteRecon():
     root = None
     crawl_count = Value('i',0)
-    pause_min = 5
-    pause_max = 13
+    pause_min = None
+    pause_max = None
     aggression = None
     basic_url = None
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'}
