@@ -3,6 +3,7 @@ from time import sleep
 import re
 from random import randint
 from multiprocessing import Process, Value, Manager
+import traceback
 # external libraries
 from bs4 import BeautifulSoup
 from requests import get
@@ -341,14 +342,11 @@ class SiteRecon():
         self.all_links.add(self.root.url)
         progress_proc = Process(target=self.display_progress)
         progress_proc.start()
-        # try:
-        #     self.scan_page(self.root.url, self.root)
-        #     self.crawl_site(self.root)
-        # except Exception as e:
-        #     print(e)
-        #     print("A failure occurred")
-        self.scan_page(self.root.url, self.root)
-        self.crawl_site(self.root)
+        try:
+            self.scan_page(self.root.url, self.root)
+            self.crawl_site(self.root)
+        except Exception:
+            traceback.print_exc()
         progress_proc.join()
         self.writer.log_data(self.all_emails, self.external_links, self.urls_with_forms, self.all_links)
 
