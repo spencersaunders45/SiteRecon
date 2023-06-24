@@ -352,6 +352,15 @@ class SiteRecon():
 
 
     def display_progress(self):
+        """
+        Displays a progress bar and shows the url being scanned
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         with Progress() as progress:
             scan_progress = progress.add_task("[red]Progress...", total=self.crawl_max.value)
             last_count = self.crawl_count.value
