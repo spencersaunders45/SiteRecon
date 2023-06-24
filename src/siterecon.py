@@ -23,7 +23,7 @@ aggression.add_argument(
     '-ag',
     '--aggression',
     choices=["A", "M", "P"],
-    help="A: 0s | M: 3s-10s | P: 10s-30s",
+    help="A: 0s | M: 30s-45s | P: 45s-90s",
     default="M",
     action="store"
     )
@@ -41,21 +41,12 @@ output = parser.add_argument_group("output")
 output.description = "Options for creating the report file."
 output.add_argument(
     '-fp',
-    '--file-path',
+    '--filepath',
     help="Location of where you want the output file.",
     default=".",
     action="store",
     type=str,
     metavar="<path>"
-)
-output.add_argument(
-    '-fn',
-    '--filename',
-    help="The name of the output file.",
-    type=str,
-    action="store",
-    metavar="<file name>",
-    default="output.txt"
 )
 defaults = parser.add_argument_group("defaults")
 defaults.description = "Change the defaults for all the flags"
@@ -68,20 +59,12 @@ defaults.add_argument(
     choices=["A", "M", "P"]
 )
 defaults.add_argument(
-    '-Dfn',
-    '--default-filename',
-    type=str,
-    action="store",
-    metavar="<file name>",
-    help="Change the default filename.",
-)
-defaults.add_argument(
     '-Dfp',
-    '--default-file-path',
+    '--default-filepath',
     type=str,
     action="store",
     metavar="<path>",
-    help="Change the default file path.",
+    help="Change the default filepath.",
 )
 defaults.add_argument(
     '-Dc',
@@ -97,7 +80,6 @@ sr = SiteRecon(
     args.aggression,
     args.custom_aggression,
     args.count,
-    args.file_path,
-    args.filename
+    args.filepath,
     )
 sr.run_program()

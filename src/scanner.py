@@ -20,7 +20,6 @@ class SiteRecon():
     pause_min = 5
     pause_max = 13
     aggression = None
-    file_name = None
     basic_url = None
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'}
     all_links = set()
@@ -28,7 +27,6 @@ class SiteRecon():
     all_emails = set()
     urls_with_forms = set()
     phone_numbers = set()
-    writer = Writer()
     io = IO()
 
 
@@ -39,15 +37,14 @@ class SiteRecon():
             c_aggression: str,
             count: int, 
             file_path: str,
-            file_name: str
             ):
         self.target_url = url
         self.aggression = aggression
         self.c_aggression = c_aggression
         self.crawl_max = Value('i',count)
-        self.file_name = file_name,
         self.file_path = file_path
         self.current_url = Manager().Value(str, url)
+        self.writer = Writer(self.file_path)
 
 
     def get_http_response(self, url):
@@ -325,6 +322,41 @@ class SiteRecon():
         if 'http' not in self.root.url or 'https' not in self.root.url:
             self.root.url = 'https://' + self.root.url
 
+
+    def set_aggression(self) -> None:
+        """
+        Sets the wait between each request
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
+        if self.c_aggression == None:
+            aggression = self.aggression
+            match aggression:
+                case "A":
+                    self.pause_max = 0
+                    self.pause_min = 0
+                case "M":
+                    self.pause_max = 45
+                    self.pause_min = 30
+                case "P":
+                    self.pause_max = 90
+                    self.pause_min = 45
+        else:
+            if self.c_aggression[0] > self.c_aggression[1]:
+                self.pause_max = self.c_aggression[0]
+                self.pause_min = self.c_aggression[1]
+            elif self.c_aggression[1] > self.c_aggression[0]:
+                self.pause_max = self.c_aggression[1]
+                self.pause_min = self.c_aggression[0]
+            else:
+                self.pause_max = self.c_aggression[0]
+                self.pause_min = self.c_aggression[1]
+
+
     def run_program(self) -> None:
         """Starts the process of scanning the website
 
@@ -335,6 +367,7 @@ class SiteRecon():
             None
         """
         self.io.display_title()
+        self.set_aggression()
         self.create_tree()
         self.get_basic_url()
         self.add_http()

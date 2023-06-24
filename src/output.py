@@ -7,9 +7,11 @@ class Writer:
     file_name : str
         The name of the output file
     """
-    def __init__(self, file_name="output.txt"):
-        self.file_name = file_name
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.full_path = None
         self.visited_sites = list()
+
 
     def write_header(self, url: str) -> None:
         """Writes the header on the report file
@@ -24,7 +26,7 @@ class Writer:
         time_data = datetime.datetime.now()
         date = time_data.strftime("%x")
         time = time_data.strftime("%X")
-        f = open(self.file_name, "w")
+        f = open(self.file_path, "w")
         f.write(f"================= {url} [{time} {date}] =================\n")
         f.write("\n========== INTERNAL URL'S ==========\n")
         f.close()
@@ -41,7 +43,7 @@ class Writer:
         Returns:
             None
         """
-        f = open(self.file_name, "a")
+        f = open(self.file_path, "a")
         f.write(f"{status_code}: {url}\n")
         f.close()
 
@@ -55,7 +57,7 @@ class Writer:
         Returns:
             None
         """
-        f = open(self.file_name, "a")
+        f = open(self.file_path, "a")
         f.write(text + "\n")
         f.close()
 
@@ -84,7 +86,7 @@ class Writer:
         Returns:
             None
         """
-        f = open(self.file_name, "a")
+        f = open(self.file_path, "a")
         f.write("\n========== EMAILS ==========\n")
         for email in emails:
             f.write(email+"\n")
@@ -94,7 +96,7 @@ class Writer:
         """
         
         """
-        f = open(self.file_name, "a")
+        f = open(self.file_path, "a")
         f.write("\n========== WEBPAGES WITH FORMS ==========\n")
         for url in form_list:
             f.write(url + "\n")
@@ -104,7 +106,7 @@ class Writer:
         """
         
         """
-        f = open(self.file_name, "a")
+        f = open(self.file_path, "a")
         f.write("\n========== HTTP ONLY ==========\n")
         for link in all_links:
             if "https" not in link:
@@ -121,7 +123,7 @@ class Writer:
         Returns:
             None
         """
-        f = open(self.file_name, "a")
+        f = open(self.file_path, "a")
         f.write("\n========== EXTERNAL LINKS ==========\n")
         for link in external_links:
             f.write(link+"\n")
