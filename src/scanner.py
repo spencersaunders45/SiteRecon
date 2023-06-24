@@ -3,30 +3,14 @@ from time import sleep
 import re
 from random import randint
 from multiprocessing import Process, Value, Manager
-import ctypes
 # external libraries
 from bs4 import BeautifulSoup
-from requests import get, Response
+from requests import get
 from rich.progress import Progress
-from rich.live import Live
 # project imports
 from display import IO
 from node import Node
 from output import Writer
-
-"""
-//todo: make a Node for link structure
-//todo: make different modes (aggressive, passive, etc)
-    //todo: passive mode - randomizes wait time between requests
-//todo: option to save logs
-todo: save non-domain name links and group them by domain
-//todo: find and save emails
-todo: reports site response status
-//todo: make settings json file
-todo: scan which sites have http
-todo: scan which pages have forms on them
-todo: separate results by status, http protocol, forms on pages
-"""
 
 
 class SiteRecon():

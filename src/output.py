@@ -1,10 +1,5 @@
 import datetime
 
-"""
-todo: Add header to output. Default header is the main URL and time it was scanned
-todo: add ability to customize output file name
-"""
-
 class Writer:
     """Writes the output file of the information gathered from the website
     
