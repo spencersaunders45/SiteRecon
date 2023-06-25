@@ -1,8 +1,11 @@
 {
-    "resultsOutputPath": null,
-    "outputFileName": "results.txt",
-    "maxSitesSearch": 20,
+    "filePath": "results.txt",
+    "maxSitesSearch": 100,
     "defaultAggression": "M",
-    "maxWaitTime": null,
-    "minWaitTime": null,
+    "aggressiveMaxWait": 0,
+    "aggressiveMinWait": 0,
+    "moderateMaxWait": 45,
+    "moderateMinWait": 30,
+    "passiveMaxWait": 45,
+    "passiveMinWait": 90
 }

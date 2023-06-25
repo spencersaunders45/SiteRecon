@@ -1,5 +1,6 @@
 from scanner import SiteRecon
 from argparse import ArgumentParser
+from update import Settings
 
 
 parser = ArgumentParser(
@@ -56,7 +57,8 @@ defaults.add_argument(
     help="Change the default mode for the -ag flag.",
     type=str,
     action="store",
-    choices=["A", "M", "P"]
+    choices=["A", "M", "P"],
+    default=None
 )
 defaults.add_argument(
     '-Dfp',
@@ -65,6 +67,7 @@ defaults.add_argument(
     action="store",
     metavar="<path>",
     help="Change the default filepath.",
+    default=None
 )
 defaults.add_argument(
     '-Dc',
@@ -73,8 +76,48 @@ defaults.add_argument(
     action="store",
     metavar="<int>",
     help="Change the default count.",
+    default=None
+)
+defaults.add_argument(
+    '-Daw',
+    '--default-aggressive-wait',
+    type=int,
+    action="store",
+    metavar=("<max>", "<min>"),
+    help="Change the default aggressive wait.",
+    default=None,
+    nargs=2
+)
+defaults.add_argument(
+    '-Dmw',
+    '--default-moderate-wait',
+    type=int,
+    action="store",
+    metavar=("<max>", "<min>"),
+    help="Change the default moderate wait.",
+    default=None,
+    nargs=2
+)
+defaults.add_argument(
+    '-Dpw',
+    '--default-passive-wait',
+    type=int,
+    action="store",
+    metavar=("<max>", "<min>"),
+    help="Change the default passive wait.",
+    default=None,
+    nargs=2
 )
 args = parser.parse_args()
+settings = Settings(
+    args.default_filepath,
+    args.default_count,
+    args.default_aggression,
+    args.default_aggressive_wait,
+    args.default_moderate_wait,
+    args.default_passive_wait
+)
+settings.update_settings()
 sr = SiteRecon(
     args.url,
     args.aggression,

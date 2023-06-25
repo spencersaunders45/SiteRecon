@@ -397,11 +397,11 @@ class SiteRecon():
         with Progress() as progress:
             scan_progress = progress.add_task("[red]Progress...", total=self.crawl_max.value)
             last_count = self.crawl_count.value
-            progress.console.print(self.current_url.value)
+            progress.console.print("SCANNING...", self.current_url.value)
             while not progress.finished:
                 update = 0
                 if self.crawl_count.value > last_count:
-                    progress.console.print(self.current_url.value)
+                    progress.console.print("SCANNING...", self.current_url.value)
                     update = self.crawl_count.value - last_count
                     last_count = self.crawl_count.value
                 progress.update(scan_progress, advance=update)
