@@ -1,6 +1,9 @@
 from scanner import SiteRecon
 from argparse import ArgumentParser
-from update import Settings
+from update import Settings, read_settings
+
+
+default_values = read_settings()
 
 
 parser = ArgumentParser(
@@ -13,7 +16,7 @@ parser.add_argument(
     '-c',
     '--count',
     type=int,
-    default=20,
+    default=default_values['maxSiteSearch'],
     action="store",
     metavar="<int>",
     help="The number of webpages you want to scan."
@@ -24,8 +27,8 @@ aggression.add_argument(
     '-ag',
     '--aggression',
     choices=["A", "M", "P"],
-    help="A: 0s | M: 30s-45s | P: 45s-90s",
-    default="M",
+    help=f"A: {default_values['aggressiveMinWait']}s-{default_values['aggressiveMaxWait']}s | M: {default_values['moderateMinWait']}s-{default_values['moderateMaxWait']}s | P: {default_values['passiveMinWait']}s-{default_values['passiveMaxWait']}s",
+    default=default_values['defaultAggression'],
     action="store"
     )
 aggression.add_argument(
@@ -35,7 +38,7 @@ aggression.add_argument(
     nargs=2,
     action="store",
     help="Customize wait time between requests.",
-    metavar=("<max>", "<min>"),
+    metavar=("<min>", "<max>"),
     default=None
 )
 output = parser.add_argument_group("output")
@@ -44,7 +47,7 @@ output.add_argument(
     '-fp',
     '--filepath',
     help="Location of where you want the output file.",
-    default="output.txt",
+    default=default_values['filePath'],
     action="store",
     type=str,
     metavar="<path>"
@@ -83,7 +86,7 @@ defaults.add_argument(
     '--default-aggressive-wait',
     type=int,
     action="store",
-    metavar=("<max>", "<min>"),
+    metavar=("<min>", "<max>"),
     help="Change the default aggressive wait.",
     default=None,
     nargs=2
@@ -93,7 +96,7 @@ defaults.add_argument(
     '--default-moderate-wait',
     type=int,
     action="store",
-    metavar=("<max>", "<min>"),
+    metavar=("<min>", "<max>"),
     help="Change the default moderate wait.",
     default=None,
     nargs=2
@@ -103,10 +106,16 @@ defaults.add_argument(
     '--default-passive-wait',
     type=int,
     action="store",
-    metavar=("<max>", "<min>"),
+    metavar=("<min>", "<max>"),
     help="Change the default passive wait.",
     default=None,
     nargs=2
+)
+defaults.add_argument(
+    '-ss',
+    '--show-settings',
+    action="store_true",
+    help="Shows all the default values."
 )
 args = parser.parse_args()
 settings = Settings(
@@ -118,11 +127,14 @@ settings = Settings(
     args.default_passive_wait
 )
 settings.update_settings()
-sr = SiteRecon(
-    args.url,
-    args.aggression,
-    args.custom_aggression,
-    args.count,
-    args.filepath,
-    )
-sr.run_program()
+if args.show_settings:
+    settings.show_settings()
+if args.url.lower() != "none":
+    sr = SiteRecon(
+        args.url,
+        args.aggression,
+        args.custom_aggression,
+        args.count,
+        args.filepath,
+        )
+    sr.run_program()

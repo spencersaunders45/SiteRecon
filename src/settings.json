@@ -1,11 +1,1 @@
-{
-    "filePath": "results.txt",
-    "maxSitesSearch": 100,
-    "defaultAggression": "M",
-    "aggressiveMaxWait": 0,
-    "aggressiveMinWait": 0,
-    "moderateMaxWait": 45,
-    "moderateMinWait": 30,
-    "passiveMaxWait": 45,
-    "passiveMinWait": 90
-}
+{"filePath": "results/results.txt", "maxSiteSearch": 100, "defaultAggression": "M", "aggressiveMaxWait": 0, "aggressiveMinWait": 0, "moderateMaxWait": 45, "moderateMinWait": 30, "passiveMaxWait": 90, "passiveMinWait": 45}

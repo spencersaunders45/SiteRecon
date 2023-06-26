@@ -12,6 +12,7 @@ from rich.progress import Progress
 from display import IO
 from node import Node
 from output import Writer
+from update import read_settings
 
 
 class SiteRecon():
@@ -28,6 +29,7 @@ class SiteRecon():
     urls_with_forms = set()
     phone_numbers = set()
     io = IO()
+    defaults = read_settings()
 
 
     def __init__(
@@ -337,14 +339,14 @@ class SiteRecon():
             aggression = self.aggression
             match aggression:
                 case "A":
-                    self.pause_max = 0
-                    self.pause_min = 0
+                    self.pause_max = self.defaults['aggressiveMaxWait']
+                    self.pause_min = self.defaults['aggressiveMinWait']
                 case "M":
-                    self.pause_max = 45
-                    self.pause_min = 30
+                    self.pause_max = self.defaults['moderateMaxWait']
+                    self.pause_min = self.defaults['moderateMinWait']
                 case "P":
-                    self.pause_max = 90
-                    self.pause_min = 45
+                    self.pause_max = self.defaults['passiveMaxWait']
+                    self.pause_min = self.defaults['passiveMinWait']
         else:
             if self.c_aggression[0] > self.c_aggression[1]:
                 self.pause_max = self.c_aggression[0]
