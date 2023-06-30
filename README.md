@@ -10,7 +10,6 @@ This is an information gathering tool to scan websites for:
 ***Please use this tool for good purposes.***
 
 ## Dependence's
-***
 ```{python}
 pip install rich
 pip install requests
