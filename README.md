@@ -1,5 +1,5 @@
 # SiteRecon
-***
+
 This is an information gathering tool to scan websites for:
 - Form locations
 - External urls
@@ -18,7 +18,7 @@ pip install beautifulsoup4
 ```
 
 ## How to use this tool
-***
+
 - Navigate to the src directory and use `python3 siterecon.py -h`
 ### Scan with default settings:
 - `python3 siterecon.py [target url]` 
@@ -53,5 +53,5 @@ Use the `-ss` or `--show-settings` flag to view all the default settings. You ca
 `python3 siterecon.py -ss none`
 
 ## License
-***
+
 MIT
