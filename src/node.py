@@ -1,6 +1,6 @@
 class Node:
     """Creates a node that will be added into the Node
-    
+
     Attributes:
     url : str
         A page URL
@@ -13,8 +13,8 @@ class Node:
         self.children = []
 
     def add_child(self, node):
-        """ Adds a Node object to the list of children
-        
+        """Adds a Node object to the list of children
+
         Parameters:
         node : Node
             An object of Node
@@ -30,6 +30,6 @@ class Node:
         Returns:
         list
             A list of Node objects
-        
+
         """
         return self.children
